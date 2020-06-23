@@ -1,0 +1,105 @@
+name: Dump GitHub Actions contexts
+
+# https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+on:
+  schedule:
+    - cron: "0 8 * * TUE"
+  workflow_dispatch:
+  repository_dispatch:
+  check_run:
+  check_suite:
+  create:
+  delete:
+  deployment:
+  deployment_status:
+  fork:
+  gollum:
+  issue_comment:
+  issues:
+  label:
+  milestone:
+  page_build:
+  project:
+  project_card:
+  project_column:
+  public:
+  pull_request:
+  pull_request_review:
+  pull_request_review_comment:
+  pull_request_target:
+  push:
+  registry_package:
+  release:
+  status:
+  watch:
+  workflow_run:
+    workflows:
+      - Trigger workflow_run event
+
+
+jobs:
+  misc-contexts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Dump env context
+        env:
+          FOO_ENV: bar
+          ENV_CONTEXT: ${{ toJson(env) }}
+        run: echo "$ENV_CONTEXT"
+
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
+  action-context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository to get local action
+        uses: actions/checkout@v2
+
+      - name: Dump action context
+        uses: ./.github/actions/dump-action-context
+
+  needs-context:
+    needs: misc-contexts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump needs context
+        env:
+          NEEDS_CONTEXT: ${{ toJson(needs) }}
+        run: echo "$NEEDS_CONTEXT"
+
+  # Dumping the secrets context seems to make the log obfuscator go nuts and corrupt a bunch of non-secrets in the job, so isolate it to its own job
+  secrets-context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump secrets context
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+        run: echo "$SECRETS_CONTEXT"
